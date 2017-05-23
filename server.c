@@ -82,9 +82,9 @@ int main(int argc, char **argv)
                 if(!strcmp(buffer, "exit"))
                     break;
             }
+            printf("Servidor: terminada a conexao com %d\n", inet_ntoa(endereco_dele.sin_addr));
         }
         close(Novosocket);
-        printf("Servidor: terminada a conexao com %d\n", inet_ntoa(endereco_dele.sin_addr));
         while(waitpid(-1, NULL, WNOHANG) > 0); /* Limpa o processo crianca.fork() */
     }
 
