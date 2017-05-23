@@ -1,3 +1,7 @@
+/* Programa desenvolvido por Nash Leon 
+   Thanks Ramona e unsekurity team.
+   http://unsekurity.virtualave.net
+*/
 /* Headers */
 
 #include <stdio.h>
