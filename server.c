@@ -63,23 +63,28 @@ int main(int argc, char **argv)
         printf("Servidor: chegando conexão de %d\n", inet_ntoa(endereco_dele.sin_addr));
         if (!fork()) 
         {
-            bzero(buffer, 100);
-            //n = read(Novosocket, buffer, 255);
-            if (read(Novosocket, buffer, 100) < 0) 
-            {
-                perror("ERROR reading from socket");
-                exit(1);
-            }
-            printf("Here is the message: %s\n", buffer);
-
             if (write(Novosocket, "Seja bem vindo!\n", 16) < 0)
             {
                 perror("write");
                 close(Novosocket);
                 exit(0);
             }
+            while(1)
+            {
+                bzero(buffer, 100);
+                //n = read(Novosocket, buffer, 255);
+                if (read(Novosocket, buffer, 100) < 0) 
+                {
+                    perror("ERROR reading from socket");
+                    exit(1);
+                }
+                printf("Here is the message: %s\n", buffer);
+                if(!strcmp(buffer, "exit"))
+                    break;
+            }
         }
         close(Novosocket);
+        printf("Servidor: terminada a conexao com %d\n", inet_ntoa(endereco_dele.sin_addr));
         while(waitpid(-1, NULL, WNOHANG) > 0); /* Limpa o processo crianca.fork() */
     }
 
