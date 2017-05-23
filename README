@@ -1,0 +1,9 @@
+
+
+## Server ##
+gcc server.c -o server
+./server <porta> 
+
+## Cliente ##
+gcc client.c -o client
+./client localhost <porta>
