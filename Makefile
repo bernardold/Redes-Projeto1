@@ -1,13 +1,9 @@
-CC = gcc
-CFLAGS = -Wall
-PROG = projeto1
-SRCS = projeto1.c
-#LIBS = -lGLU -lGL -lglut -lSOIL -lm -pthread
+all: 
+	gcc server.c socketsFunc.c -o2 -o server
+	gcc client.c socketsFunc.c -o2 -o client
 
-all: $(PROG)
+clean: 
+	@rm -rf *.o *~ *.dat
 
-$(PROG): $(SRCS)
-	$(CC) $(SRCS) $(CFLAGS) -o $(PROG)
 
-clean:
-	rm -f $(PROG)
+	

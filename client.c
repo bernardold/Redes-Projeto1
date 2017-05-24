@@ -14,25 +14,19 @@
 #include <sys/socket.h>
 
 //#define PORTA 8081    /* Porta para conectar */
-#define MAXDATASIZE 100 /* máximo número de bytes que poderemos enviar
+#define MAXBUFFERSIZE 256 /* máximo número de bytes que poderemos enviar
                            por vez */
-
-void error(const char *msg)
-{
-    perror(msg);
-    exit(EXIT_FAILURE);
-}
 
 int main(int argc, char *argv[])
 {
-    int clientSocket, numbytes, portnum;
+    int clientSocket, charCount, portnum;
     struct hostent *server;
     struct sockaddr_in server_address;
-    char buffer[MAXDATASIZE];
+    char buffer[MAXBUFFERSIZE];
 
     if(argc != 3) 
     {
-        fprintf(stderr, "usage: %s <hostname> <port>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <hostname> <port>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -40,42 +34,35 @@ int main(int argc, char *argv[])
 
     if((server = gethostbyname(argv[1])) == NULL)   /* envia host info */
     {
-        fprintf(stderr, "ERROR (gethostbyname), no such host\n");
+        error("ERROR (gethostbyname), no such host");
         exit(EXIT_FAILURE);
     }
 
-    if((clientSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
-    {
-        error("ERROR opening socket\n");
-    }
+    clientSocket = createSocket();
 
     bzero((char *) &server_address, sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(portnum);
-    server_address.sin_addr = *((struct in_addr *) server->h_addr);
-    //bzero(&(server_address.sin_zero), 8);
+    server_address.sin_addr = *((struct in_addr *) server->h_addr); // ou  *((struct in_addr *) server->h_addr); 
 
-    if(connect(clientSocket, (struct sockaddr *) &server_address, sizeof(struct sockaddr)) == -1) 
-    {
-        error("ERROR connecting");
-    }
+    connectToServer(clientSocket, server_address);
 
-    bzero(buffer, MAXDATASIZE);
-    if((numbytes = read(clientSocket, buffer, MAXDATASIZE)) < 0) 
+    bzero(buffer, MAXBUFFERSIZE);
+
+    if((charCount = readFromSocket(clientSocket, &buffer, MAXBUFFERSIZE)) < 0) 
     {
-        error("READ");
+        error("ERROR reading from socket");
     }
-    buffer[numbytes] = '\0';
+    buffer[charCount] = '\0';
     printf("Recebido do servidor: %s", buffer);
 
     while(1)
     {
         printf("Please enter the message: ");
-        //bzero(buffer, MAXDATASIZE);
+        bzero(buffer, MAXBUFFERSIZE);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strlen(buffer) - 1] = '\0';
-        //n = write(clientSocket, buffer, strlen(buffer));
-        if(write(clientSocket, buffer, strlen(buffer)) < 0) 
+        if(writeToSocket(clientSocket, buffer) < 0) 
         {   
             error("ERROR writing to socket");
         }

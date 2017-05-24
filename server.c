@@ -13,79 +13,80 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 
-#define MINHAPORTA 8081   /* Porta que os usuarios irão se conectar*/
-#define BACKLOG 10     /* Quantas conexões pendentes serão indexadas */
+//#define MINHAPORTA 8081   /* Porta que os usuarios irão se conectar*/
+#define BACKLOG 5     /* Quantas conexões pendentes serão indexadas */
+#define MAXBUFFERSIZE 256
 
 int main(int argc, char **argv)
 {
-    int Meusocket, Novosocket;  /* escuta em Meusocket, nova conexão
-                                   em Novosocket */
-    struct sockaddr_in meu_endereco;    /* informação do meu endereco */
-    struct sockaddr_in endereco_dele; /* informação do endereco do conector */
-    int tamanho;
-    char buffer[100];
+    int serverSocket, newSocket;  /* escuta em serverSocket, nova conexão
+                                   em newSocket */
     int portnum;
+    struct sockaddr_in server_address;    /* informação do meu endereco */
+    struct sockaddr_in client_address; /* informação do endereco do conector */
+    int clientLength;
+    char buffer[MAXBUFFERSIZE];
+    int pid;
 
-    if ((Meusocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+    if(argc != 2) 
     {
-        perror("socket");
-        exit(1);
+        fprintf(stderr, "Usage: %s <port>\n", argv[0]);
+        exit(EXIT_FAILURE);
     }
+
+    serverSocket = createSocket();
 
     portnum = atoi(argv[1]);
 
-    meu_endereco.sin_family = AF_INET;
-    meu_endereco.sin_port = htons(portnum);
-    meu_endereco.sin_addr.s_addr = INADDR_ANY; /* coloca IP automaticamente */
-    bzero(&(meu_endereco.sin_zero), 8);        /* Zera o resto da estrutura */
+    bzero((char *) &server_address, sizeof(server_address)); /* Zera o resto da estrutura */
+    server_address.sin_family = AF_INET;
+    server_address.sin_port = htons(portnum);
+    server_address.sin_addr.s_addr = INADDR_ANY; // ou inet_addr("127.0.0.1") /* coloca IP automaticamente */
 
-    if (bind(Meusocket, (struct sockaddr *) &meu_endereco, sizeof(struct sockaddr)) == -1) 
-    {
-        perror("bind");
-        exit(1);
-    }
-    if (listen(Meusocket, BACKLOG) < 0) 
-    {
-        perror("listen");
-        exit(1);
-    }
+    bindToAddress(serverSocket, server_address);
 
-    printf("Server UP!\n");
+    listenToConnections();
+
+    printf("Servidor ativo!\n");
 
     while(1) 
-    {
-        tamanho = sizeof(struct sockaddr_in);
-        if ((Novosocket = accept(Meusocket, (struct sockaddr *) &endereco_dele, &tamanho)) < 0)
-        {
-            perror("accept");
-            continue;
+    {   
+        newSocket = acceptConnection(serverSocket, client_address);
+        printf("Servidor: chegando conexão de %d\n", inet_ntoa(client_address.sin_addr));
+
+        pid = fork();
+        if(pid < 0) 
+        {   
+            error("ERROR on fork");
         }
-        printf("Servidor: chegando conexão de %d\n", inet_ntoa(endereco_dele.sin_addr));
-        if (!fork()) 
-        {
-            if (write(Novosocket, "Seja bem vindo!\n", 16) < 0)
+        else if(pid == 0) // apenas os processos filhos entram aqui
+        {   
+            close(serverSocket);
+            // HANDLE INICIO
+            if(writeToSocket(newSocket, "Seja bem-vindo!\n") < 0)
             {
-                perror("write");
-                close(Novosocket);
-                exit(0);
+                perror("ERROR on writing to socket");
+                close(newSocket);
+                exit(EXIT_FAILURE);
             }
             while(1)
             {
-                bzero(buffer, 100);
-                //n = read(Novosocket, buffer, 255);
-                if (read(Novosocket, buffer, 100) < 0) 
+                bzero(buffer, MAXBUFFERSIZE);  // zera o buffer
+                if(readFromSocket(newSocket, &buffer, MAXBUFFERSIZE) < 0) 
                 {
-                    perror("ERROR reading from socket");
-                    exit(1);
+                    error("ERROR reading from socket");
                 }
-                printf("Here is the message: %s\n", buffer);
                 if(!strcmp(buffer, "exit"))
                     break;
+                printf("Here is the message: %s\n", buffer);
             }
-            printf("Servidor: terminada a conexao com %d\n", inet_ntoa(endereco_dele.sin_addr));
+            close(newSocket);
+            // HANDLE FIM
+            printf("Servidor: terminada a conexao com %d\n", inet_ntoa(client_address.sin_addr));
+            exit(0);
         }
-        close(Novosocket);
-        while(waitpid(-1, NULL, WNOHANG) > 0); /* Limpa o processo crianca.fork() */
+        close(newSocket);
+        while(waitpid(-1, NULL, WNOHANG) > 0); /* Limpa os processos filhos */
     }
 
     return 0;
