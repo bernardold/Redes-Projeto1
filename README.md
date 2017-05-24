@@ -6,8 +6,6 @@ Projeto 1 da disciplina de Redes de Computadores do Instituto de Ciências Matem
 
 ```
 gcc
-OpenGL
-SOIL
 ```
 
 ## Compilação e execução
