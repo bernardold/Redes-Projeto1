@@ -1,9 +1,12 @@
 all: 
-	gcc server.c socketsFunc.c -o2 -o server
-	gcc client.c socketsFunc.c -o2 -o client
+	gcc server.c -o2 -o server
+	gcc client.c -o2 -o client1
+	gcc client.c -o2 -o client2
 
 clean: 
 	@rm -rf *.o *~ *.dat
 
+run:
+	(./client1 localhost 8080) & (./client2 localhost 8080)
 
 	

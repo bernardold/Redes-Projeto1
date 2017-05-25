@@ -1,9 +1,3 @@
-/* Programa desenvolvido por Nash Leon 
-   Thanks Ramona e unsekurity team.
-   http://unsekurity.virtualave.net
-*/
-/* Velhos headers de sempre */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -11,11 +5,16 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/wait.h>
 
 //#define MINHAPORTA 8081   /* Porta que os usuarios irão se conectar*/
 #define BACKLOG 5     /* Quantas conexões pendentes serão indexadas */
 #define MAXBUFFERSIZE 256
+
+void error(const char *msg)
+{
+    perror(msg);
+    exit(EXIT_FAILURE);
+}
 
 int main(int argc, char **argv)
 {
@@ -34,7 +33,10 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    serverSocket = createSocket();
+    if((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+    {
+        error("ERROR opening socket");
+    }
 
     portnum = atoi(argv[1]);
 
@@ -43,15 +45,25 @@ int main(int argc, char **argv)
     server_address.sin_port = htons(portnum);
     server_address.sin_addr.s_addr = INADDR_ANY; // ou inet_addr("127.0.0.1") /* coloca IP automaticamente */
 
-    bindToAddress(serverSocket, server_address);
+    if(bind(serverSocket, (struct sockaddr *) &server_address, sizeof(struct sockaddr)) == -1) 
+    {
+        error("ERROR on binding socket");
+    }
 
-    listenToConnections();
+    if(listen(serverSocket, BACKLOG) < 0) 
+    {
+        error("ERROR on listening");
+    }
 
     printf("Servidor ativo!\n");
 
+    clientLength = sizeof(client_address);
     while(1) 
     {   
-        newSocket = acceptConnection(serverSocket, client_address);
+        if((newSocket = accept(serverSocket, (struct sockaddr *) &client_address, &clientLength)) < 0)
+        {
+            error("ERROR on accept");
+        }
         printf("Servidor: chegando conexão de %d\n", inet_ntoa(client_address.sin_addr));
 
         pid = fork();
@@ -63,7 +75,7 @@ int main(int argc, char **argv)
         {   
             close(serverSocket);
             // HANDLE INICIO
-            if(writeToSocket(newSocket, "Seja bem-vindo!\n") < 0)
+            if(write(newSocket, "Seja bem-vindo!\n", 16) < 0)
             {
                 perror("ERROR on writing to socket");
                 close(newSocket);
@@ -72,7 +84,7 @@ int main(int argc, char **argv)
             while(1)
             {
                 bzero(buffer, MAXBUFFERSIZE);  // zera o buffer
-                if(readFromSocket(newSocket, &buffer, MAXBUFFERSIZE) < 0) 
+                if(read(newSocket, buffer, MAXBUFFERSIZE) < 0) 
                 {
                     error("ERROR reading from socket");
                 }
@@ -88,6 +100,5 @@ int main(int argc, char **argv)
         close(newSocket);
         while(waitpid(-1, NULL, WNOHANG) > 0); /* Limpa os processos filhos */
     }
-
     return 0;
 }

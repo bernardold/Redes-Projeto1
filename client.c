@@ -1,9 +1,3 @@
-/* Programa desenvolvido por Nash Leon 
-   Thanks Ramona e unsekurity team.
-   http://unsekurity.virtualave.net
-*/
-/* Headers */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -16,6 +10,12 @@
 //#define PORTA 8081    /* Porta para conectar */
 #define MAXBUFFERSIZE 256 /* máximo número de bytes que poderemos enviar
                            por vez */
+
+void error(const char *msg)
+{
+    perror(msg);
+    exit(EXIT_FAILURE);
+}
 
 int main(int argc, char *argv[])
 {
@@ -38,18 +38,24 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    clientSocket = createSocket();
+    if((clientSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+    {
+        error("ERROR opening socket");
+    }
 
     bzero((char *) &server_address, sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(portnum);
     server_address.sin_addr = *((struct in_addr *) server->h_addr); // ou  *((struct in_addr *) server->h_addr); 
 
-    connectToServer(clientSocket, server_address);
+    if(connect(clientSocket, (struct sockaddr *) &server_address, sizeof(struct sockaddr)) == -1) 
+    {
+        error("ERROR connecting");
+    }
 
     bzero(buffer, MAXBUFFERSIZE);
 
-    if((charCount = readFromSocket(clientSocket, &buffer, MAXBUFFERSIZE)) < 0) 
+    if((charCount = read(clientSocket, buffer, MAXBUFFERSIZE)) < 0) 
     {
         error("ERROR reading from socket");
     }
@@ -62,7 +68,7 @@ int main(int argc, char *argv[])
         bzero(buffer, MAXBUFFERSIZE);
         fgets(buffer, sizeof(buffer), stdin);
         buffer[strlen(buffer) - 1] = '\0';
-        if(writeToSocket(clientSocket, buffer) < 0) 
+        if(write(clientSocket, buffer, strlen(buffer)) < 0) 
         {   
             error("ERROR writing to socket");
         }
