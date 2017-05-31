@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 
 //#define MINHAPORTA 8081   /* Porta que os usuarios irão se conectar*/
 #define BACKLOG 5     /* Quantas conexões pendentes serão indexadas */
@@ -23,7 +25,7 @@ int main(int argc, char **argv)
     int portnum;
     struct sockaddr_in server_address;    /* informação do meu endereco */
     struct sockaddr_in client_address; /* informação do endereco do conector */
-    int clientLength;
+    unsigned int clientLength;
     char buffer[MAXBUFFERSIZE];
     int pid;
 
@@ -64,7 +66,7 @@ int main(int argc, char **argv)
         {
             error("ERROR on accept");
         }
-        printf("Servidor: chegando conexão de %d\n", inet_ntoa(client_address.sin_addr));
+        printf("Servidor: chegando conexão de %s\n", inet_ntoa(client_address.sin_addr));
 
         pid = fork();
         if(pid < 0) 
@@ -94,7 +96,7 @@ int main(int argc, char **argv)
             }
             close(newSocket);
             // HANDLE FIM
-            printf("Servidor: terminada a conexao com %d\n", inet_ntoa(client_address.sin_addr));
+            printf("Servidor: terminada a conexao com %s\n", inet_ntoa(client_address.sin_addr));
             exit(0);
         }
         close(newSocket);
