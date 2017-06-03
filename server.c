@@ -96,19 +96,19 @@ int main(int argc, char **argv)
                 }
                 else if(id == '3')
                 {
-                    strcpy(client1, buffer[3] + 1);
+                    //strcpy(client1, buffer[3] + 1);
                 }
                 else if(id == '4')
                 {
-                    strcpy(client2, buffer[4] + 1);
+                    //strcpy(client2, buffer[4] + 1);
                 }
                 else if(id == '5')
                 {
-                    strcpy(client1, buffer[5] + 1);
+                    //strcpy(client1, buffer[5] + 1);
                 }
                 else if(id == '6')
                 {
-                    strcpy(client2, buffer[6] + 1);
+                    //strcpy(client2, buffer[6] + 1);
                 }
                 //usleep(1000000);
                 system("clear");
