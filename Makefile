@@ -1,19 +1,17 @@
-all: 
-	gcc server.c -Wall -o2 -o server
-	gcc client.c -Wall -o2 -o client
-	gcc client.c -Wall -o2 -o client1
-	gcc client.c -Wall -o2 -o client2
+PORTA0 = 51111
+PORTA1 = 51112
+FLAGS = -o2
+	
+all: server.c client0.c client1.c socketsFunction.c
+	gcc server.c socketsFunction.c -pthread $(FLAGS) -o server
+	gcc client0.c socketsFunction.c $(FLAGS) -o client0
+	gcc client1.c socketsFunction.c $(FLAGS) -o client1
 
 clean: 
-	@rm -rf *.o *~ *.dat client client1 client2 server
+	@rm -rf *.o *~ *.dat client0 client1 server
 
 run:
-	(./client1 localhost 8080) & (./client2 localhost 8080)
+	./client0 localhost $(PORTA0) & ./client1 localhost $(PORTA1)
 
-runcl:
-	./client localhost 8080
-
-runsv:
-	./server 8080
-
+	
 	
