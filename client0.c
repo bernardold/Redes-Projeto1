@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <netdb.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include <time.h>
 
 #include "socketsFunction.h"
@@ -19,9 +19,9 @@ int main(int argc, char *argv[])
     int clientSocket, charCount, portnum;
     struct hostent *server;
     struct sockaddr_in server_address;
-    char buffer[MAXBUFFERSIZE], msg[MAXBUFFERSIZE], c;
+    char buffer[MAXBUFFERSIZE], msg[MAXBUFFERSIZE];
 
-    int r;
+    float temp = (rand() % 30) + ((rand() % 101) / 10.0);
 
     srand(getpid() * ((unsigned) time(NULL)));
 
@@ -61,10 +61,17 @@ int main(int argc, char *argv[])
     {   
         bzero(buffer, MAXBUFFERSIZE);
         bzero(msg, MAXBUFFERSIZE);
-        r = rand() % 100;
-        // sprintf(buffer, "%d", (int) r);
-        sprintf(buffer, "%d", r);
         strcpy(msg, "0");
+        if(rand() % 2 == 0)
+            temp += 1.1;
+        else
+            temp -= 1.1;
+        if(temp > 30.0)
+            temp = 30.0;
+        else if(temp < 0.0)
+            temp = 0.0;
+        // sprintf(buffer, "%d", (int) r);
+        sprintf(buffer, "%.1f", temp);
         strcat(msg, buffer);
         msg[strlen(msg)] = '\0';
 

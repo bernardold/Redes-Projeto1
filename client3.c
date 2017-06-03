@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <netdb.h>
@@ -11,17 +10,24 @@
 
 #include "socketsFunction.h"
 
+//#define PORTA 8081    /* Porta para conectar */
 #define MAXBUFFERSIZE 256 /* máximo número de bytes que poderemos enviar
                            por vez */
+
+// void error(const char *msg)
+// {
+//     perror(msg);
+//     exit(EXIT_FAILURE);
+// }
 
 int main(int argc, char *argv[])
 {
     int clientSocket, charCount, portnum;
     struct hostent *server;
     struct sockaddr_in server_address;
-    char buffer[MAXBUFFERSIZE], msg[MAXBUFFERSIZE];
+    char buffer[MAXBUFFERSIZE], msg[MAXBUFFERSIZE], c;
 
-    float temp = (rand() % 30) + ((rand() % 101) / 10.0);
+    int r;
 
     srand(getpid() * ((unsigned) time(NULL)));
 
@@ -61,17 +67,10 @@ int main(int argc, char *argv[])
     {   
         bzero(buffer, MAXBUFFERSIZE);
         bzero(msg, MAXBUFFERSIZE);
-        strcpy(msg, "1");
-        if(rand() % 2 == 0)
-            temp += 1.1;
-        else
-            temp -= 1.1;
-        if(temp > 30.0)
-            temp = 30.0;
-        else if(temp < 0.0)
-            temp = 0.0;
+        r = rand() % 100;
         // sprintf(buffer, "%d", (int) r);
-        sprintf(buffer, "%.1f", temp);
+        sprintf(buffer, "%d", r);
+        strcpy(msg, "3");
         strcat(msg, buffer);
         msg[strlen(msg)] = '\0';
 

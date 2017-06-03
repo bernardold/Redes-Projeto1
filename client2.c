@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     {   
         bzero(buffer, MAXBUFFERSIZE);
         bzero(msg, MAXBUFFERSIZE);
-        strcpy(msg, "1");
+        strcpy(msg, "2");
         if(rand() % 2 == 0)
             temp += 1.1;
         else
