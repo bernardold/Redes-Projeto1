@@ -9,15 +9,21 @@ gcc
 ```
 
 ## Compilação e execução
+Compilação e execução pode ser feita por Makefile. O seguinte comando é suficiente para compilar os códigos do servidor e dos clientes.
 ```
 $ make
 ```
-### Servidor
+### Executando Servidor
+O comando a seguir executa o servidor, que imediatamente espera por conexões dos clientes.
 ```
-$ ./server <porta>
+$ ./server
 ```
 ### Clientes
+Cada cliente é uma abstração de um sensor diferente, o comando a seguir executa os clientes que já iniciam automaticamente a conexão com o servidor. 
 ```
-$ ./client localhost <porta>
+$ make run
 ```
+### Observações
++A execução dos clientes deve acontecer em uma nova janela do terminal.
++O comando de execução dos clientes executa todos em paralelo em uma mesma janela do terminal
 
