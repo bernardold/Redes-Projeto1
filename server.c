@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -7,100 +6,102 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <pthread.h>
+
+#include "socketsFunction.h"
 
 //#define MINHAPORTA 8081   /* Porta que os usuarios irão se conectar*/
-#define BACKLOG 5     /* Quantas conexões pendentes serão indexadas */
 #define MAXBUFFERSIZE 256
+#define N 2
 
-void error(const char *msg)
-{
-    perror(msg);
-    exit(EXIT_FAILURE);
-}
+struct ThreadArgs { /* Structure of arguments to pass to client thread */
+    int clntSock; /* socket descriptor for client */
+};
+
+char client0[MAXBUFFERSIZE];
+char client1[MAXBUFFERSIZE];
 
 int main(int argc, char **argv)
 {
-    int serverSocket, newSocket;  /* escuta em serverSocket, nova conexão
-                                   em newSocket */
-    int portnum;
-    struct sockaddr_in server_address;    /* informação do meu endereco */
-    struct sockaddr_in client_address; /* informação do endereco do conector */
+    int serverSocket[N], clientSocket[N];  /* escuta em serverSocket, nova conexão
+                                   em clientSocket */
+    int portnum[] = {51111, 51112};
+    struct sockaddr_in server_address[N];    /* informação do meu endereco */
+    struct sockaddr_in client_address[N]; /* informação do endereco do conector */
     unsigned int clientLength;
-    char buffer[MAXBUFFERSIZE];
-    int pid;
+    char buffer[2][MAXBUFFERSIZE] = {'\0', '\0'};
+    char id;
 
-    if(argc != 2) 
+    pthread_t threadID[N];
+    struct ThreadArgs *threadArgs;
+    int argu[N];
+
+    int i = 0;
+
+    if(argc != 1) 
     {
-        fprintf(stderr, "Usage: %s <port>\n", argv[0]);
+        fprintf(stderr, "Usage: %s\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
-    if((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+    for(i = 0; i < N; i++)
     {
-        error("ERROR opening socket");
+        serverSocket[i] = createSocket();
+
+        bzero((char *) &server_address, sizeof(server_address)); /* Zera o resto da estrutura */
+        server_address[i].sin_family = AF_INET;
+        server_address[i].sin_port = htons(portnum[i]);
+        server_address[i].sin_addr.s_addr = INADDR_ANY; // ou inet_addr("127.0.0.1") /* coloca IP automaticamente */
+
+        bindToAddress(serverSocket[i], &server_address[i]);
+
+        listenToConnections(serverSocket[i]);
     }
 
-    portnum = atoi(argv[1]);
-
-    bzero((char *) &server_address, sizeof(server_address)); /* Zera o resto da estrutura */
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(portnum);
-    server_address.sin_addr.s_addr = INADDR_ANY; // ou inet_addr("127.0.0.1") /* coloca IP automaticamente */
-
-    if(bind(serverSocket, (struct sockaddr *) &server_address, sizeof(struct sockaddr)) == -1) 
-    {
-        error("ERROR on binding socket");
-    }
-
-    if(listen(serverSocket, BACKLOG) < 0) 
-    {
-        error("ERROR on listening");
-    }
 
     printf("Servidor ativo!\n");
 
-    clientLength = sizeof(client_address);
+    clientLength = sizeof(client_address[0]);
+    i = 0;
     while(1) 
     {   
-        if((newSocket = accept(serverSocket, (struct sockaddr *) &client_address, &clientLength)) < 0)
+        while(i < N)
         {
-            error("ERROR on accept");
-        }
-        printf("Servidor: chegando conexão de %s\n", inet_ntoa(client_address.sin_addr));
-
-        pid = fork();
-        if(pid < 0) 
-        {   
-            error("ERROR on fork");
-        }
-        else if(pid == 0) // apenas os processos filhos entram aqui
-        {   
-            close(serverSocket);
-            // HANDLE INICIO
-            if(write(newSocket, "Seja bem-vindo!\n", 16) < 0)
+            clientSocket[i] = acceptConnection(serverSocket[i], &client_address[i], &clientLength);
+            printf("Servidor: chegando conexão de %s\n", inet_ntoa(client_address[i].sin_addr));
+            if(writeToSocket(clientSocket[i], "Connection established with server!\n") < 0)
             {
                 perror("ERROR on writing to socket");
-                close(newSocket);
+                close(clientSocket[i]);
                 exit(EXIT_FAILURE);
             }
-            while(1)
+            i++;
+        }
+        //else{
+        while(1)
+        {
+            for(i = 0; i < N; i++)
             {
-                bzero(buffer, MAXBUFFERSIZE);  // zera o buffer
-                if(read(newSocket, buffer, MAXBUFFERSIZE) < 0) 
+                //bzero(buffer[i], MAXBUFFERSIZE);  // zera o buffer
+                if(readFromSocket(clientSocket[i], buffer[i], MAXBUFFERSIZE) < 0) 
                 {
                     error("ERROR reading from socket");
                 }
-                if(!strcmp(buffer, "exit"))
-                    break;
-                printf("Here is the message: %s\n", buffer);
+                id = buffer[i][0];
+                if(id == '0')
+                {
+                    strcpy(client0, buffer[0] + 1);
+                }
+                else if(id == '1')
+                {
+                    strcpy(client1, buffer[1] + 1);
+                }
+                //usleep(1000000);
+                //system("clear");
+                printf("Client 0: %s\nClient 1: %s\n", client0, client1);
             }
-            close(newSocket);
-            // HANDLE FIM
-            printf("Servidor: terminada a conexao com %s\n", inet_ntoa(client_address.sin_addr));
-            exit(0);
-        }
-        close(newSocket);
-        while(waitpid(-1, NULL, WNOHANG) > 0); /* Limpa os processos filhos */
+        }   
     }
+
     return 0;
 }

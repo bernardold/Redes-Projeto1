@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -7,23 +6,24 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
+#include <time.h>
 
-//#define PORTA 8081    /* Porta para conectar */
+#include "socketsFunction.h"
+
 #define MAXBUFFERSIZE 256 /* máximo número de bytes que poderemos enviar
                            por vez */
-
-void error(const char *msg)
-{
-    perror(msg);
-    exit(EXIT_FAILURE);
-}
 
 int main(int argc, char *argv[])
 {
     int clientSocket, charCount, portnum;
     struct hostent *server;
     struct sockaddr_in server_address;
-    char buffer[MAXBUFFERSIZE];
+    char buffer[MAXBUFFERSIZE], msg[MAXBUFFERSIZE], c;
+
+    int r;
+
+    srand(getpid() * ((unsigned) time(NULL)));
 
     if(argc != 3) 
     {
@@ -39,24 +39,18 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    if((clientSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
-    {
-        error("ERROR opening socket");
-    }
+    clientSocket = createSocket(); 
 
     bzero((char *) &server_address, sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(portnum);
     server_address.sin_addr = *((struct in_addr *) server->h_addr); // ou  *((struct in_addr *) server->h_addr); 
 
-    if(connect(clientSocket, (struct sockaddr *) &server_address, sizeof(struct sockaddr)) == -1) 
-    {
-        error("ERROR connecting");
-    }
+    connectToServer(clientSocket, &server_address);
 
     bzero(buffer, MAXBUFFERSIZE);
 
-    if((charCount = read(clientSocket, buffer, MAXBUFFERSIZE)) < 0) 
+    if((charCount = readFromSocket(clientSocket, buffer, MAXBUFFERSIZE)) < 0) 
     {
         error("ERROR reading from socket");
     }
@@ -64,19 +58,21 @@ int main(int argc, char *argv[])
     printf("Recebido do servidor: %s", buffer);
 
     while(1)
-    {
-        printf("Please enter the message: ");
+    {   
         bzero(buffer, MAXBUFFERSIZE);
-        fgets(buffer, sizeof(buffer), stdin);
-        buffer[strlen(buffer) - 1] = '\0';
-        if(write(clientSocket, buffer, strlen(buffer)) < 0) 
+        bzero(msg, MAXBUFFERSIZE);
+        r = rand() % 100;
+        // sprintf(buffer, "%d", (int) r);
+        sprintf(buffer, "%d", r);
+        strcpy(msg, "0");
+        strcat(msg, buffer);
+        msg[strlen(msg)] = '\0';
+
+        if(writeToSocket(clientSocket, msg) < 0) 
         {   
             error("ERROR writing to socket");
         }
-        if(!strcmp(buffer, "exit"))
-        {
-            break;
-        }
+        usleep(1300000);
     }
     close(clientSocket);
 
