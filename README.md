@@ -32,4 +32,3 @@ $ make run
 ### Observações
 + A execução dos clientes deve acontecer em uma nova janela do terminal.
 + O comando de execução dos clientes executa todos em paralelo em uma mesma janela do terminal
-

@@ -3,7 +3,7 @@
 
 #include <unistd.h>
 
-//#define MINHAPORTA 8081   /* Porta que os usuarios irão se conectar*/
+#define MAXBUFFERSIZE 100
 #define BACKLOG 5     /* Quantas conexões pendentes serão indexadas */
 
 void error(const char *msg);
