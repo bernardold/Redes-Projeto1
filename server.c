@@ -11,16 +11,40 @@
 #include "socketsFunction.h"
 
 #define MAXBUFFERSIZE 256
-#define N 3
+#define N 10
 
 char client0[MAXBUFFERSIZE];
 char client1[MAXBUFFERSIZE];
 char client2[MAXBUFFERSIZE];
+char client3[MAXBUFFERSIZE];
+char client4[MAXBUFFERSIZE];
+char client5[MAXBUFFERSIZE];
+char client6[MAXBUFFERSIZE];
+char client7[MAXBUFFERSIZE];
+char client8[MAXBUFFERSIZE];
+char client9[MAXBUFFERSIZE];
+char client10[MAXBUFFERSIZE];
+char client11[MAXBUFFERSIZE];
+char client12[MAXBUFFERSIZE];
 
 
 float temperaturaAviao(float temp0, float temp1, float temp2)
 {
     return ((temp0 + temp1 + temp2) / 3.0);
+}
+
+int aeromocaOcupada(int pos0, int pos1, int pos2)
+{
+    if (pos0 % 4 != 0 || pos1 % 4 != 0 || pos2 % 4 != 0) return 1;
+    return 0;
+}
+
+char *posicaoAeromoca(p) {
+    p = p % 3;
+
+    if (p == 0) return ("na frente");
+    else if (p == 1) return ("no meio");
+    else return ("no fundo");
 }
 
 int main(int argc, char **argv)
@@ -108,13 +132,46 @@ int main(int argc, char **argv)
                 }
                 else if(id == '6')
                 {
-                    //strcpy(client2, buffer[6] + 1);
+                    // strcpy(client6, buffer[6] + 1);
+                }
+                else if(id == '7')
+                {
+                    // strcpy(client7, buffer[6] + 1);
+                }
+                else if(id == '8')
+                {
+                    // strcpy(client8, buffer[6] + 1);
+                }
+                else if(id == '9')
+                {
+                    // strcpy(client9, buffer[6] + 1);
+                }
+                else if(id == '10')
+                {
+                    // strcpy(client7, buffer[6] + 1);
+                }
+                else if(id == '11')
+                {
+                    // strcpy(client8, buffer[6] + 1);
+                }
+                else if(id == '12')
+                {
+                    // strcpy(client9, buffer[6] + 1);
                 }
                 //usleep(1000000);
                 system("clear");
+                // Temperatura
                 printf("TEMPERATURA\n");
                 printf("\tFrente: %.1f ºC\n\tMeio: %.1f ºC\n\tAtra's: %.1f ºC\n", atof(client0), atof(client1), atof(client2));
                 printf("\tMe'dia: %.1f ºC (virtual)\n", temperaturaAviao(atof(client0), atof(client1), atof(client2)));
+
+                // Status Aeromoça
+                printf("STATUS AEROMOÇA\n");
+                if (aeromocaOcupada(atoi(client9), atoi(client10), atoi(client11))) {
+                    printf("A aeromoça está ocupada atendendo alguém %s do avião\n", posicaoAeromoca(atoi(client12)));
+                } else {
+                    printf("A aeromoça está livre!\n");
+                }
             }
         }   
     }
