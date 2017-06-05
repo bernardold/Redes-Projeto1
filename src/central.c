@@ -39,7 +39,7 @@ int numeroPessoas(int c1, int c2, int c3)
 
 int aeromocaOcupada(int reqfrente, int reqmeio, int reqtras)
 {
-    if (reqfrente != 0 || reqmeio != 0 || reqtras != 0) return 1;  // aeromoca foi requisitada, esta' ocupada
+    if (reqfrente%2 != 0 || reqmeio%2 != 0 || reqtras%2 != 0) return 1;  // aeromoca foi requisitada, esta' ocupada
     return 0;
 }
 
