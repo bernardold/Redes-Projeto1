@@ -9,25 +9,36 @@ PORTA7 = 51117
 PORTA8 = 51118
 PORTA9 = 51119
 FLAGS = -o2 -Wall
+CC = gcc
 	
-all: central.c temperatura0.c temperatura1.c temperatura2.c economica.c executiva.c primeira.c reqtras.c reqmeio.c reqtras.c aeromoca.c socketsFunction.c
-	gcc central.c socketsFunction.c -pthread $(FLAGS) -o central
-	gcc temperatura0.c socketsFunction.c $(FLAGS) -o temperatura0
-	gcc temperatura1.c socketsFunction.c $(FLAGS) -o temperatura1
-	gcc temperatura2.c socketsFunction.c $(FLAGS) -o temperatura2
-	gcc economica.c socketsFunction.c $(FLAGS) -o economica
-	gcc executiva.c socketsFunction.c $(FLAGS) -o executiva
-	gcc primeira.c socketsFunction.c $(FLAGS) -o primeira
-	gcc reqfrente.c socketsFunction.c $(FLAGS) -o reqfrente
-	gcc reqmeio.c socketsFunction.c $(FLAGS) -o reqmeio
-	gcc reqtras.c socketsFunction.c $(FLAGS) -o reqtras
-	gcc aeromoca.c socketsFunction.c $(FLAGS) -o aeromoca
+all: src/central.c src/temperatura0.c src/temperatura1.c src/temperatura2.c src/economica.c src/executiva.c src/primeira.c src/reqtras.c src/reqmeio.c src/reqtras.c src/aeromoca.c src/socketsFunction.c
+	@mkdir -p bin/
+	$(CC) src/central.c src/socketsFunction.c $(FLAGS) -o bin/central
+	$(CC) src/temperatura0.c src/socketsFunction.c $(FLAGS) -o bin/temperatura0
+	$(CC) src/temperatura1.c src/socketsFunction.c $(FLAGS) -o bin/temperatura1
+	$(CC) src/temperatura2.c src/socketsFunction.c $(FLAGS) -o bin/temperatura2
+	$(CC) src/economica.c src/socketsFunction.c $(FLAGS) -o bin/economica
+	$(CC) src/executiva.c src/socketsFunction.c $(FLAGS) -o bin/executiva
+	$(CC) src/primeira.c src/socketsFunction.c $(FLAGS) -o bin/primeira
+	$(CC) src/reqfrente.c src/socketsFunction.c $(FLAGS) -o bin/reqfrente
+	$(CC) src/reqmeio.c src/socketsFunction.c $(FLAGS) -o bin/reqmeio
+	$(CC) src/reqtras.c src/socketsFunction.c $(FLAGS) -o bin/reqtras
+	$(CC) src/aeromoca.c src/socketsFunction.c $(FLAGS) -o bin/aeromoca
 
 clean: 
-	@rm -rf *.o *~ central temperatura0 temperatura1 temperatura2 economica executiva primeira reqtras reqmeio reqtras aeromoca
+	@rm -rf ./bin/* 
 
 run:
-	./temperatura0 localhost $(PORTA0) & ./temperatura1 localhost $(PORTA1) & ./temperatura2 localhost $(PORTA2) & ./economica localhost $(PORTA3) & ./executiva localhost $(PORTA4) & ./primeira localhost $(PORTA5) & ./reqfrente localhost $(PORTA6) & ./reqmeio localhost $(PORTA7) & ./reqtras localhost $(PORTA8) & ./aeromoca localhost $(PORTA9)
+	@./bin/temperatura0 localhost $(PORTA0) & 
+	@./bin/temperatura1 localhost $(PORTA1) & 
+	@./bin/temperatura2 localhost $(PORTA2) & 
+	@./bin/economica localhost $(PORTA3) & 
+	@./bin/executiva localhost $(PORTA4) & 
+	@./bin/primeira localhost $(PORTA5) & 
+	@./bin/reqfrente localhost $(PORTA6) &
+	@./bin/reqmeio localhost $(PORTA7) & 
+	@./bin/reqtras localhost $(PORTA8) & 
+	@./bin/aeromoca localhost $(PORTA9)
 
 	
 	
