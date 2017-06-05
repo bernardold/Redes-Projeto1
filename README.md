@@ -22,7 +22,7 @@ $ make
 ### Executando Servidor
 O comando a seguir executa o servidor, que imediatamente espera por conexões dos clientes.
 ```
-$ ./central
+$ ./bin/central
 ```
 ### Clientes
 Cada cliente é uma abstração de um sensor diferente, o comando a seguir executa os clientes que já iniciam automaticamente a conexão com o servidor. 
