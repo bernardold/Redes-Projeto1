@@ -179,7 +179,7 @@ int main(int argc, char **argv)
                     printf("\tOS PASSAGEIROS COMECAM A SE SENTIR INSATISFEITOS!");
                 printf(" (virtual)\n");
 
-                printf("Pressiona Crtl-C para sair.\n");
+                printf("Pressione Crtl-C para sair.\n");
             }
         }   
     }
